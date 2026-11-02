@@ -1,0 +1,17 @@
+const page=(location.pathname.split('/').pop()||'index.html');document.querySelectorAll('nav a').forEach(a=>{if(a.getAttribute('href')===page)a.classList.add('active')});document.querySelector('.menu')?.addEventListener('click',()=>document.querySelector('nav').classList.toggle('open'));document.querySelector('#year')?.replaceChildren(document.createTextNode(new Date().getFullYear()));
+let portfolioContent = null;
+function el(tag,cls,txt){const n=document.createElement(tag);if(cls)n.className=cls;if(txt!==undefined)n.textContent=txt;return n}
+function setText(selector,value){document.querySelectorAll(selector).forEach(n=>{if(value)n.textContent=value})}
+fetch('content/portfolio.json').then(r=>{if(!r.ok)throw Error('Content unavailable');return r.json()}).then(c=>{
+ portfolioContent=c;
+ document.querySelectorAll('[data-content]').forEach(n=>{const val=n.dataset.content.split('.').reduce((a,k)=>a?.[k],c);if(typeof val==='string')n.textContent=val});
+ document.querySelectorAll('footer .foot span:last-child').forEach(n=>n.textContent=(c.site.title||'')+' · Philippines');
+ const paragraphs=document.querySelector('[data-about-paragraphs]');if(paragraphs&&Array.isArray(c.about?.paragraphs)){const existing=paragraphs.querySelectorAll(':scope > p');existing.forEach(n=>n.remove());const anchor=paragraphs.querySelector('h3');c.about.paragraphs.forEach(t=>paragraphs.insertBefore(el('p','',t),anchor))}
+ const tags=document.querySelector('[data-tools]');if(tags&&Array.isArray(c.about?.tools)){tags.replaceChildren(...c.about.tools.map(t=>el('span','tag',t)))}
+ const services=document.querySelector('[data-services]');if(services&&Array.isArray(c.services?.items)){services.replaceChildren(...c.services.items.map((s,i)=>{const card=el('div','card');card.append(el('span','num',String(i+1).padStart(2,'0')),el('h3','',s.title),el('p','',s.description));return card}))}
+ const projects=document.querySelector('[data-projects]');if(projects&&Array.isArray(c.projects?.items)){projects.replaceChildren(...c.projects.items.map(s=>{const card=el('div','project');if(s.image){const img=el('img','project-image');img.src=s.image;img.alt=s.title||'Project image';img.loading='lazy';card.append(img)}card.append(el('span','',s.category),el('h3','',s.title),el('p','',s.description));return card}))}
+ const email=document.querySelector('[data-email]');if(email&&c.site?.email){email.replaceChildren();const a=el('a','',c.site.email);a.href='mailto:'+c.site.email;email.append(a)}
+ const linkedin=document.querySelector('[data-linkedin]');if(linkedin&&c.site?.linkedin){linkedin.replaceChildren();const a=el('a','','View LinkedIn profile ↗');a.href=c.site.linkedin;a.rel='noopener noreferrer';a.target='_blank';linkedin.append(a)}
+ if(c.site?.resume_url){document.querySelector('.hero .actions')?.append(Object.assign(el('a','btn alt','Download résumé ↓'),{href:c.site.resume_url,target:'_blank',rel:'noopener noreferrer'}))}
+}).catch(e=>console.warn('Using default portfolio content:',e));
+const form=document.querySelector('#contact-form');form?.addEventListener('submit',e=>{e.preventDefault();const email=portfolioContent?.site?.email;if(!email){alert('Contact email is not configured yet. Please add it in your content dashboard.');return}const d=new FormData(form);const subject=encodeURIComponent('Portfolio inquiry from '+d.get('name'));const body=encodeURIComponent('Name: '+d.get('name')+'\nEmail: '+d.get('email')+'\n\n'+d.get('message'));location.href='mailto:'+email+'?subject='+subject+'&body='+body});
