@@ -1,0 +1,24 @@
+media:
+  input: media
+  output: /media
+
+content:
+  - name: projects
+    label: Portfolio Projects
+    type: collection
+    path: content/projects
+    format: json
+    fields:
+      - name: title
+        label: Project Title
+        type: string
+        required: true
+      - name: description
+        label: Project Description
+        type: text
+      - name: category
+        label: Category
+        type: string
+      - name: image
+        label: Project Image
+        type: image
